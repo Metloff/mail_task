@@ -108,12 +108,9 @@ func printResult(resultsC chan *result, output io.Writer, wg *sync.WaitGroup) {
 
 	for _, result := range results {
 		fmt.Fprintln(output, fmt.Sprintf("Count for %s: %d", result.source, result.count))
-		// log.Println(fmt.Sprintf("Count for %s: %v", result.source, result.count))
 	}
 
-	// log.Println("Total:", total)
 	fmt.Fprintln(output, "Total:", total)
-
 }
 
 // getContentFromFile - получает контент из файла.
@@ -164,6 +161,3 @@ func isURL(source string) bool {
 
 	return true
 }
-
-// echo -e 'https://golang.org\n/etc/passwd\nhttps://golang.org\nhttps://golang.org' | go run main.go
-// echo -e 'https://golang.org\n/etc/passwd\nhttps://golang.org\nhttps://golang.org' | go run main.go -cpuprofile=cpu.out -memprofile=mem.out
