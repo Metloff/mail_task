@@ -27,7 +27,7 @@ var (
 		Transport: transport,
 	}
 
-	workerLimit = 2
+	workerLimit = 5
 )
 
 type result struct {
@@ -37,6 +37,10 @@ type result struct {
 }
 
 func main() {
+	getWordCountFromSources(os.Stdin, os.Stdout)
+}
+
+func getWordCountFromSources(input io.Reader, output io.Writer) {
 	// Канал, ограничивающий количество одновременно запущенных горутин.
 	qoutaC := make(chan struct{}, workerLimit)
 	// Канал с результатами подсчетов.
@@ -46,11 +50,11 @@ func main() {
 	wgWorkers := &sync.WaitGroup{}
 
 	// Запускаем в отдельной рутине функцию, для вывода результатов работы.
-	go printResult(resultsC, wgResult)
+	go printResult(resultsC, output, wgResult)
 	wgResult.Add(1)
 
 	// Считываем Stdin.
-	in := bufio.NewScanner(os.Stdin)
+	in := bufio.NewScanner(input)
 	for i := 0; in.Scan(); i++ {
 		source := in.Text()
 		var content io.ReadCloser
@@ -87,7 +91,7 @@ func main() {
 // printResult - вычитывает из канала и накапливает результаты работы подсчета.
 // Сортирует результаты в порядке подачи источников.
 // По окончанию работы программы выводит результаты и суммарное количество найденных совпадений.
-func printResult(resultsC chan *result, wg *sync.WaitGroup) {
+func printResult(resultsC chan *result, output io.Writer, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var results []result
@@ -103,10 +107,13 @@ func printResult(resultsC chan *result, wg *sync.WaitGroup) {
 	})
 
 	for _, result := range results {
-		log.Println(fmt.Sprintf("Count for %s: %v", result.source, result.count))
+		fmt.Fprintln(output, fmt.Sprintf("Count for %s: %d", result.source, result.count))
+		// log.Println(fmt.Sprintf("Count for %s: %v", result.source, result.count))
 	}
 
-	log.Println("Total:", total)
+	// log.Println("Total:", total)
+	fmt.Fprintln(output, "Total:", total)
+
 }
 
 // getContentFromFile - получает контент из файла.
